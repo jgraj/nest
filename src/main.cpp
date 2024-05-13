@@ -34,10 +34,14 @@ void create_selector_comma(DynArr<char>* output, DynArr<DynArr<char>> selector_s
 			create_selector_comma(output, new_selector_stack, current_index + 1);
 		} else {
 			for (int ii = 0; ii < new_selector_stack.len; ++ii) {
-				output->join(new_selector_stack[ii]);
-				if (ii < new_selector_stack.len - 1) {
+				bool is_ampersand = new_selector_stack[ii][0] == '&';
+				if (ii > 0 && !is_ampersand) {
 					output->push(' ');
 				}
+				if (is_ampersand) {
+					new_selector_stack[ii].pop_front();
+				}
+				output->join(new_selector_stack[ii]);
 			}
 		}
 		if (i < split_by_commas.len - 1) {
