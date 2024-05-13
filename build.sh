@@ -1,0 +1,1 @@
+g++ src/main.cpp -s -O3 -o out/nest
