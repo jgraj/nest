@@ -54,12 +54,6 @@ void create_selector(DynArr<char>* output, DynArr<DynArr<char>> selector_stack, 
 	if (current_body.len == 0) {
 		return;
 	}
-	bool is_at_rule = false;
-	if (selector_stack[0][0] == '@') {
-		is_at_rule = true;
-		output->join(selector_stack.pop_front());
-		output->push('{');
-	}
 	create_selector_comma(output, selector_stack, 0);
 	output->push('{');
 	if (current_body[current_body.len - 1] == ';') {
@@ -67,9 +61,6 @@ void create_selector(DynArr<char>* output, DynArr<DynArr<char>> selector_stack, 
 	}
 	output->join(current_body);
 	output->push('}');
-	if (is_at_rule) {
-		output->push('}');
-	}
 }
 
 void compile(char* input, int input_len) {
@@ -78,21 +69,33 @@ void compile(char* input, int input_len) {
 	DynArr<DynArr<char>> body_stack = DynArr<DynArr<char>>::new_with_cap(8);
 	DynArr<char> current_buffer = DynArr<char>::new_with_cap(32);
 	DynArr<char> current_body = DynArr<char>::new_with_cap(1024);
+	bool is_at_rule = false;
 	for (int i = 0; i < input_len; ++i) {
 		char c = input[i];
 		switch (c) {
 			case '{': {
-				body_stack.push(current_body);
-				current_body = DynArr<char>::new_with_cap(1024);
 				trim_string(&current_buffer);
-				selector_stack.push(current_buffer);
+				if (current_buffer[0] == '@') {
+					is_at_rule = true;
+					output.join(current_buffer);
+					output.push('{');
+				} else {
+					body_stack.push(current_body);
+					current_body = DynArr<char>::new_with_cap(1024);
+					selector_stack.push(current_buffer);
+				}
 				current_buffer = DynArr<char>::new_with_cap(32);
 				break;
 			}
 			case '}': {
-				create_selector(&output, selector_stack, current_body);
-				current_body = body_stack.pop();
-				selector_stack.pop();
+				if (selector_stack.len == 0 && is_at_rule) {
+					is_at_rule = false;
+					output.push('}');
+				} else {
+					create_selector(&output, selector_stack, current_body);
+					current_body = body_stack.pop();
+					selector_stack.pop();
+				}
 				break;
 			}
 			case ';': {
