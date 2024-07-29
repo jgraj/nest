@@ -1,33 +1,49 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
-#include "array.cpp"
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+#include <cctype>
+#include "gar.cpp"
 
-void trim_string(DynArr<char>* string) {
-	while (string->len && isspace((*string)[0])) {
+void trim_string(gar<char>* string) {
+	while (string->len && std::isspace((*string)[0])) {
 		string->len -= 1;
 		string->buf += 1;
 	}
-	while (string->len && isspace((*string)[string->len - 1])) {
+	while (string->len && std::isspace((*string)[string->len - 1])) {
 		string->len -= 1;
 	}
 }
 
-void trim_body(DynArr<char>* string) {
+void trim_body(gar<char>* string) {
 	for (int i = 0; i < string->len; ++i) {
-		if (string->buf[i] == ':' && isspace(string->buf[i + 1])) {
+		if (string->buf[i] == ':' && std::isspace(string->buf[i + 1])) {
 			string->remove_at(i + 1);
 			--i;
 		}
 	}
 }
 
-void create_selector_comma(DynArr<char>* output, DynArr<DynArr<char>> selector_stack, int current_index) {
-	DynArr<char> selector = selector_stack[current_index];
-	DynArr<DynArr<char>> split_by_commas = selector.split(',');
+gar<gar<char>> split(gar<char> array, char delimiter) {
+	gar<gar<char>> new_array = gar<gar<char>>::alloc(4);
+	int last_index = 0;
+	for (int i = 0; i <= array.len; ++i) {
+		if (i == array.len || array.buf[i] == delimiter) {
+			int size = i - last_index;
+			gar<char> sub_array = gar<char>::alloc(size);
+			std::memcpy(sub_array.buf, &array.buf[last_index], sizeof(char) * size);
+			sub_array.len = size;
+			new_array.push(sub_array);
+			last_index = ++i;
+		}
+	}
+	return new_array;
+}
+
+void create_selector_comma(gar<char>* output, gar<gar<char>> selector_stack, int current_index) {
+	gar<char> selector = selector_stack[current_index];
+	gar<gar<char>> split_by_commas = split(selector, ',');
 	for (int i = 0; i < split_by_commas.len; ++i) {
-		DynArr<DynArr<char>> new_selector_stack = selector_stack.clone();
+		gar<gar<char>> new_selector_stack = selector_stack.clone();
 		trim_string(&split_by_commas[i]);
 		new_selector_stack[current_index] = split_by_commas[i];
 		if (current_index + 1 < selector_stack.len) {
@@ -39,7 +55,7 @@ void create_selector_comma(DynArr<char>* output, DynArr<DynArr<char>> selector_s
 					output->push(' ');
 				}
 				if (is_ampersand) {
-					new_selector_stack[ii].pop_front();
+					new_selector_stack[ii].remove_at(0);
 				}
 				output->join(new_selector_stack[ii]);
 			}
@@ -50,7 +66,7 @@ void create_selector_comma(DynArr<char>* output, DynArr<DynArr<char>> selector_s
 	}
 }
 
-void create_selector(DynArr<char>* output, DynArr<DynArr<char>> selector_stack, DynArr<char> current_body) {
+void create_selector(gar<char>* output, gar<gar<char>> selector_stack, gar<char> current_body) {
 	if (current_body.len == 0) {
 		return;
 	}
@@ -64,11 +80,11 @@ void create_selector(DynArr<char>* output, DynArr<DynArr<char>> selector_stack, 
 }
 
 void compile(char* input, int input_len) {
-	DynArr<char> output = DynArr<char>::new_with_cap(1024);
-	DynArr<DynArr<char>> selector_stack = DynArr<DynArr<char>>::new_with_cap(8);
-	DynArr<DynArr<char>> body_stack = DynArr<DynArr<char>>::new_with_cap(8);
-	DynArr<char> current_buffer = DynArr<char>::new_with_cap(32);
-	DynArr<char> current_body = DynArr<char>::new_with_cap(1024);
+	gar<char> output = gar<char>::alloc(1024);
+	gar<gar<char>> selector_stack = gar<gar<char>>::alloc(8);
+	gar<gar<char>> body_stack = gar<gar<char>>::alloc(8);
+	gar<char> current_buffer = gar<char>::alloc(32);
+	gar<char> current_body = gar<char>::alloc(1024);
 	bool is_at_rule = false;
 	for (int i = 0; i < input_len; ++i) {
 		char c = input[i];
@@ -81,10 +97,10 @@ void compile(char* input, int input_len) {
 					output.push('{');
 				} else {
 					body_stack.push(current_body);
-					current_body = DynArr<char>::new_with_cap(1024);
+					current_body = gar<char>::alloc(1024);
 					selector_stack.push(current_buffer);
 				}
-				current_buffer = DynArr<char>::new_with_cap(32);
+				current_buffer = gar<char>::alloc(32);
 				break;
 			}
 			case '}': {
@@ -103,7 +119,7 @@ void compile(char* input, int input_len) {
 				trim_body(&current_buffer);
 				current_buffer.push(';');
 				current_body.join(current_buffer);
-				current_buffer = DynArr<char>::new_with_cap(32);
+				current_buffer = gar<char>::alloc(32);
 				break;
 			}
 			default: {
@@ -119,23 +135,23 @@ void compile(char* input, int input_len) {
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
-		printf("No arguments provided");
+		std::printf("No arguments provided");
 		return 1;
 	}
 	if (argc > 2) {
-		printf("Too many arguments provided");
+		std::printf("Too many arguments provided");
 		return 1;
 	}
 	const char* file_path = argv[1];
-	FILE* file = fopen(file_path, "r");
+	FILE* file = std::fopen(file_path, "r");
 	if (file == NULL) {
-		printf("Couldn't open file '%s'", file_path);
+		std::printf("Couldn't open file '%s'", file_path);
 		return 1;
 	}
-	fseek(file, 0, SEEK_END);
-	long file_size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	char* file_content = (char*)malloc(file_size * sizeof(char));
-	fread(file_content, 1, file_size, file);
+	std::fseek(file, 0, SEEK_END);
+	long file_size = std::ftell(file);
+	std::fseek(file, 0, SEEK_SET);
+	char* file_content = (char*)std::malloc(file_size * sizeof(char));
+	std::fread(file_content, 1, file_size, file);
 	compile(file_content, file_size);
 }
