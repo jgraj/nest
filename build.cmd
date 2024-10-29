@@ -8,4 +8,4 @@ if not exist %mingw64% (
 	exit /b 1
 )
 
-%mingw64%\bin\g++ nest.cpp -o nest.exe -std=c++20 -Wall -O3 -static -s -mconsole -Ictk
+%mingw64%\bin\g++ nest.cpp -o nest.exe -std=c++20 -Wall -O3 -static -s -mconsole -Iinc

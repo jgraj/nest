@@ -1,1 +1,1 @@
-g++ nest.cpp -o nest -std=c++20 -Wall -O3 -static -s -Ictk
+g++ nest.cpp -o nest -std=c++20 -Wall -O3 -static -s -Iinc

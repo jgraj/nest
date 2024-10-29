@@ -7,7 +7,7 @@
 #include <cstdint>
 
 #define GAR_ABC
-#include <ctk.cpp>
+#include <ctk-0.5/ctk.cpp>
 
 void panic(const char* format, ...) {
 	va_list args;
@@ -30,7 +30,7 @@ void trim_string(gar<char>* string) {
 void trim_body(gar<char>* string) {
 	for (size_t i = 0; i < string->len; ++i) {
 		if (string->buf[i] == ':' && std::isspace(string->buf[i + 1])) {
-			string->remove_at(i + 1);
+			string->remove(i + 1);
 			--i;
 		}
 	}
@@ -68,7 +68,7 @@ void create_selector_comma(gar<char>* output, gar<gar<char>> selector_stack, siz
 					output->push(' ');
 				}
 				if (is_ampersand) {
-					new_selector_stack[ii].remove_at(0);
+					new_selector_stack[ii].remove(0);
 				}
 				output->join(new_selector_stack[ii]);
 			}
