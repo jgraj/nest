@@ -142,7 +142,7 @@ void compile(char* input, size_t input_len) {
 		}
 	}
 
-	output[output.len] = 0;
+	output.push('\0');
 	fputs(output.buf, stdout);
 }
 
