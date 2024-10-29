@@ -1,1 +1,1 @@
-g++ src/main.cpp -s -O3 -o out/nest
+g++ nest.cpp -o nest -std=c++20 -Wall -O3 -static -s -Ictk

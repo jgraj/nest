@@ -1,7 +1,3 @@
-# Fast CSS compiler with nesting + minifier
+# Nest CSS compiler v0.2
 
-Uses [gar](https://github.com/jgraj/gar)
-
-`build.cmd` for Windows
-
-`build.sh` for Linux
+Uses [ctk](https://github.com/jgraj/ctk)
