@@ -1,13 +1,7 @@
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
 #include <cctype>
-#include <cstdarg>
-#include <cmath>
-#include <cstdint>
 
 #define GAR_ABC
-#include <ctk-0.5/ctk.cpp>
+#include <ctk-0.11/ctk.cpp>
 
 void panic(const char* format, ...) {
 	va_list args;
@@ -37,15 +31,14 @@ void trim_body(gar<char>* string) {
 }
 
 gar<gar<char>> split(gar<char> array, char delimiter) {
-	gar<gar<char>> new_array = gar<gar<char>>::alloc(4);
+	gar<gar<char>> new_array = gar<gar<char>>::create_auto();
 	size_t last_index = 0;
 	for (size_t i = 0; i <= array.len; ++i) {
 		if (i == array.len || array.buf[i] == delimiter) {
 			size_t size = i - last_index;
-			gar<char> sub_array = gar<char>::alloc(size);
+			ar<char> sub_array = ar<char>::create(size);
 			std::memcpy(sub_array.buf, &array.buf[last_index], sizeof(char) * size);
-			sub_array.len = size;
-			new_array.push(sub_array);
+			new_array.push(sub_array.to_gar());
 			last_index = ++i;
 		}
 	}
@@ -93,11 +86,11 @@ void create_selector(gar<char>* output, gar<gar<char>> selector_stack, gar<char>
 }
 
 void compile(char* input, size_t input_len) {
-	gar<char> output = gar<char>::alloc(1024);
-	gar<gar<char>> selector_stack = gar<gar<char>>::alloc(8);
-	gar<gar<char>> body_stack = gar<gar<char>>::alloc(8);
-	gar<char> current_buffer = gar<char>::alloc(32);
-	gar<char> current_body = gar<char>::alloc(1024);
+	gar<char> output = gar<char>::create_auto();
+	gar<gar<char>> selector_stack = gar<gar<char>>::create_auto();
+	gar<gar<char>> body_stack = gar<gar<char>>::create_auto();
+	gar<char> current_buffer = gar<char>::create_auto();
+	gar<char> current_body = gar<char>::create_auto();
 	bool is_at_rule = false;
 	for (size_t i = 0; i < input_len; ++i) {
 		char c = input[i];
@@ -110,10 +103,10 @@ void compile(char* input, size_t input_len) {
 					output.push('{');
 				} else {
 					body_stack.push(current_body);
-					current_body = gar<char>::alloc(1024);
+					current_body = gar<char>::create_auto();
 					selector_stack.push(current_buffer);
 				}
-				current_buffer = gar<char>::alloc(32);
+				current_buffer = gar<char>::create_auto();
 				break;
 			}
 			case '}': {
@@ -132,7 +125,7 @@ void compile(char* input, size_t input_len) {
 				trim_body(&current_buffer);
 				current_buffer.push(';');
 				current_body.join(current_buffer);
-				current_buffer = gar<char>::alloc(32);
+				current_buffer = gar<char>::create(32);
 				break;
 			}
 			default: {
@@ -158,7 +151,7 @@ int main(int argc, char** argv) {
 	std::fseek(file, 0, SEEK_END);
 	size_t file_size = std::ftell(file);
 	std::fseek(file, 0, SEEK_SET);
-	char* file_content = alloc_many<char>(file_size);
+	char* file_content = alloc_space<char>(file_size);
 	if (std::fread(file_content, 1, file_size, file) != file_size) {
 		panic("fread failed");
 	}

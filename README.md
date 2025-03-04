@@ -1,3 +1,3 @@
-# Nest CSS compiler v0.4
+# Nest CSS compiler v0.5
 
 Uses [ctk](https://github.com/jgraj/ctk)
